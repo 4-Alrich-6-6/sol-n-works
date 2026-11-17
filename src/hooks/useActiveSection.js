@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 
-// Returns the id of the section currently in the middle of the viewport.
 export default function useActiveSection(ids) {
   const [active, setActive] = useState("");
 
@@ -19,7 +18,7 @@ export default function useActiveSection(ids) {
       if (el) io.observe(el);
     });
     return () => io.disconnect();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); 
 
   return active;
 }

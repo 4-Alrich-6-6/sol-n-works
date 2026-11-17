@@ -46,6 +46,11 @@ export default function Projects() {
     setDirection(step > 0 ? "next" : "prev");
     setI((current) => (current + step + n) % n);
   };
+  const goTo = (index) => {
+    if (index === i) return;
+    setDirection(index > i ? "next" : "prev");
+    setI(index);
+  };
   const toggleCategory = () => {
     setCategory((current) => (current === "software" ? "design" : "software"));
     setDirection("");
@@ -84,7 +89,8 @@ export default function Projects() {
             onPointerDown={(event) => {
               if (
                 event.pointerType === "mouse" ||
-                (event.target instanceof Element && event.target.closest(".arrow"))
+                (event.target instanceof Element &&
+                  event.target.closest(".arrow, .carousel-pagination"))
               ) {
                 return;
               }
@@ -171,6 +177,17 @@ export default function Projects() {
                   <a href={p.link} target="_blank" rel="noreferrer">{p.link}</a>
                 </p>
               )}
+            </div>
+            <div className="carousel-pagination" role="group" aria-label="Choose a project">
+              {activeProjects.map((project, index) => (
+                <button
+                  key={project.title}
+                  type="button"
+                  aria-label={`Project ${index + 1} of ${n}: ${project.title}`}
+                  aria-current={i === index ? "true" : undefined}
+                  onClick={() => goTo(index)}
+                />
+              ))}
             </div>
           </div>
         </Reveal>

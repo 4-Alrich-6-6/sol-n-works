@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { profile } from "../data.js";
+import { useEffect, useRef, useState } from "react";
+import { certificates, profile } from "../data.js";
 import Reveal from "./Reveal.jsx";
 
 export default function About() {
@@ -8,9 +8,16 @@ export default function About() {
   const resumeThumbnail = useRef(null);
   const resumeViewerImage = useRef(null);
   const resumeStage = useRef(null);
+  const certificateDialog = useRef(null);
   const dragStart = useRef(null);
   const [zoomed, setZoomed] = useState(false);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [selectedCertificate, setSelectedCertificate] = useState(null);
+
+  useEffect(() => {
+    const dialog = certificateDialog.current;
+    if (selectedCertificate && dialog && !dialog.open) dialog.showModal();
+  }, [selectedCertificate]);
 
   const clampPan = (x, y) => {
     const stage = resumeStage.current;
@@ -76,6 +83,27 @@ export default function About() {
           >
             Download Resume
           </a>
+          <div className="certificates">
+            <h3>My Certificates / Badges:</h3>
+            <ul className="certificate-list">
+              {certificates.map((certificate) => (
+                <li key={certificate.image}>
+                  <span>{certificate.title}</span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSelectedCertificate({
+                        title: certificate.title,
+                        image: `${import.meta.env.BASE_URL}certs/${certificate.image}`,
+                      })
+                    }
+                  >
+                    View {certificate.type}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </Reveal>
         <Reveal delay={2} className="about-resume">
           <button
@@ -196,6 +224,34 @@ export default function About() {
               transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoomed ? 2 : 1})`,
             }}
           />
+        </div>
+      </dialog>
+      <dialog
+        ref={certificateDialog}
+        className="resume-viewer artwork-viewer"
+        aria-label={`${selectedCertificate?.title || "Certificate"} preview`}
+        onClick={(event) => {
+          if (event.target === event.currentTarget) certificateDialog.current?.close();
+        }}
+        onClose={() => setSelectedCertificate(null)}
+      >
+        <button
+          type="button"
+          className="resume-viewer-close"
+          aria-label="Close certificate preview"
+          onClick={() => certificateDialog.current?.close()}
+        >
+          &times;
+        </button>
+        <div className="artwork-viewer-stage">
+          {selectedCertificate && (
+            <img
+              className="resume-viewer-image"
+              src={selectedCertificate.image}
+              alt={selectedCertificate.title}
+              draggable="false"
+            />
+          )}
         </div>
       </dialog>
     </section>
