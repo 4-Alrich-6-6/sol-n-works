@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import { certificates, profile } from "../data.js";
+import { certificates, expertise, profile, technicalSkills } from "../data.js";
 import Reveal from "./Reveal.jsx";
+
+const tabs = ["Main", "Expertise", "Certificates"];
 
 export default function About() {
   const resumePreviewUrl = `${import.meta.env.BASE_URL}Tecson_RESUME.png`;
   const resumeDialog = useRef(null);
-  const resumeThumbnail = useRef(null);
   const resumeViewerImage = useRef(null);
   const resumeStage = useRef(null);
   const certificateDialog = useRef(null);
   const dragStart = useRef(null);
+  const tabRefs = useRef([]);
+  const [activeTab, setActiveTab] = useState("Main");
   const [zoomed, setZoomed] = useState(false);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [selectedCertificate, setSelectedCertificate] = useState(null);
@@ -38,12 +41,11 @@ export default function About() {
     if (zoomed) setPan({ x: 0, y: 0 });
   };
 
-  const openResume = () => {
+  const openResume = (event) => {
     const dialog = resumeDialog.current;
-    const image = resumeThumbnail.current;
-    if (!dialog || dialog.open || !image) return;
+    if (!dialog || dialog.open) return;
 
-    const start = image.getBoundingClientRect();
+    const start = event.currentTarget.getBoundingClientRect();
     dialog.showModal();
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -63,71 +65,135 @@ export default function About() {
         },
         { transform: "translate(0, 0) scale(1, 1)", opacity: 1 },
       ],
-      {
-        duration: 480,
-        easing: "cubic-bezier(0.2, 0.7, 0.2, 1)",
-      },
+      { duration: 480, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
     );
+  };
+
+  const selectTabByKeyboard = (event, index) => {
+    let nextIndex;
+    if (event.key === "ArrowRight") nextIndex = (index + 1) % tabs.length;
+    else if (event.key === "ArrowLeft") nextIndex = (index - 1 + tabs.length) % tabs.length;
+    else if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = tabs.length - 1;
+    else return;
+
+    event.preventDefault();
+    setActiveTab(tabs[nextIndex]);
+    tabRefs.current[nextIndex]?.focus();
   };
 
   return (
     <section id="about">
       <h2>About me</h2>
-      <div className="about">
-        <Reveal delay={1} className="about-text">
-          <p>{profile.about}</p>
-          <a
-            className="btn"
-            href={`${import.meta.env.BASE_URL}${profile.resumeUrl}`}
-            download={profile.resumeUrl}
-          >
-            Download Resume
-          </a>
-          <div className="certificates">
-            <h3>My Certificates / Badges:</h3>
-            <ul className="certificate-list">
-              {certificates.map((certificate) => (
-                <li key={certificate.image}>
-                  <span>{certificate.title}</span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setSelectedCertificate({
-                        title: certificate.title,
-                        image: `${import.meta.env.BASE_URL}certs/${certificate.image}`,
-                      })
-                    }
-                  >
-                    View {certificate.type}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Reveal>
-        <Reveal delay={2} className="about-resume">
-          <button
-            type="button"
-            className="resume-preview"
-            aria-label="Open resume in a zoomed view"
-            onClick={openResume}
-          >
-            <img
-              ref={resumeThumbnail}
-              src={resumePreviewUrl}
-              alt="Resume preview"
-            />
-          </button>
-        </Reveal>
-      </div>
+      <Reveal className="about">
+        <div className="about-tabs" role="tablist" aria-label="About me information">
+          {tabs.map((tab, index) => (
+            <button
+              key={tab}
+              ref={(element) => {
+                tabRefs.current[index] = element;
+              }}
+              type="button"
+              id={`about-tab-${index}`}
+              role="tab"
+              aria-selected={activeTab === tab}
+              aria-controls={`about-panel-${index}`}
+              tabIndex={activeTab === tab ? 0 : -1}
+              onClick={() => setActiveTab(tab)}
+              onKeyDown={(event) => selectTabByKeyboard(event, index)}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        <div
+          id={`about-panel-${tabs.indexOf(activeTab)}`}
+          className="about-panel"
+          role="tabpanel"
+          aria-labelledby={`about-tab-${tabs.indexOf(activeTab)}`}
+          tabIndex={0}
+        >
+          {activeTab === "Main" && (
+            <>
+              <p className="about-description">{profile.about}</p>
+              <div className="about-actions">
+                <button type="button" className="btn primary" onClick={openResume}>
+                  View Resume
+                </button>
+                <a className="btn" href="#projects">View Projects</a>
+              </div>
+              <div className="experience">
+                <h3>Project experience</h3>
+                <article>
+                  <h4>Academic software projects</h4>
+                  <p>
+                    Built web-based projects including HIVE, a group participation
+                    tracking application, and Ready Job Go, a platform for finding
+                    local short-term work.
+                  </p>
+                </article>
+                <article>
+                  <h4>Visual design projects</h4>
+                  <p>
+                    Created portfolio work across logo design, infographics,
+                    product menus, and other visual brand assets.
+                  </p>
+                </article>
+              </div>
+            </>
+          )}
+
+          {activeTab === "Expertise" && (
+            <div className="expertise-content">
+              <h3>Tools & areas</h3>
+              <ul className="expertise-list">
+                {expertise.map((item) => <li key={item}>{item}</li>)}
+              </ul>
+              <h3>Technical skills</h3>
+              <ul className="skill-list">
+                {technicalSkills.map((skill) => (
+                  <li key={skill.title}>
+                    <h4>{skill.title}</h4>
+                    <p>{skill.tools}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {activeTab === "Certificates" && (
+            <div className="certificates">
+              <h3>Certificates & badges</h3>
+              <ul className="certificate-list">
+                {certificates.map((certificate) => (
+                  <li key={certificate.image}>
+                    <span>{certificate.title}</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSelectedCertificate({
+                          title: certificate.title,
+                          image: `${import.meta.env.BASE_URL}certs/${certificate.image}`,
+                        })
+                      }
+                    >
+                      View {certificate.type}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </Reveal>
+
       <dialog
         ref={resumeDialog}
         className="resume-viewer"
         aria-label="Resume preview"
         onClick={(event) => {
-          if (event.target === event.currentTarget) {
-            resumeDialog.current?.close();
-          }
+          if (event.target === event.currentTarget) resumeDialog.current?.close();
         }}
         onClose={() => {
           setZoomed(false);
@@ -162,37 +228,19 @@ export default function About() {
             } else if (zoomed && event.key.startsWith("Arrow")) {
               event.preventDefault();
               const distance = 40;
-              const dx =
-                event.key === "ArrowLeft"
-                  ? distance
-                  : event.key === "ArrowRight"
-                    ? -distance
-                    : 0;
-              const dy =
-                event.key === "ArrowUp"
-                  ? distance
-                  : event.key === "ArrowDown"
-                    ? -distance
-                    : 0;
+              const dx = event.key === "ArrowLeft" ? distance : event.key === "ArrowRight" ? -distance : 0;
+              const dy = event.key === "ArrowUp" ? distance : event.key === "ArrowDown" ? -distance : 0;
               setPan((current) => clampPan(current.x + dx, current.y + dy));
             }
           }}
           onPointerDown={(event) => {
             if (!zoomed || event.button !== 0) return;
             event.currentTarget.setPointerCapture(event.pointerId);
-            dragStart.current = {
-              x: event.clientX - pan.x,
-              y: event.clientY - pan.y,
-            };
+            dragStart.current = { x: event.clientX - pan.x, y: event.clientY - pan.y };
           }}
           onPointerMove={(event) => {
             if (!dragStart.current) return;
-            setPan(
-              clampPan(
-                event.clientX - dragStart.current.x,
-                event.clientY - dragStart.current.y,
-              ),
-            );
+            setPan(clampPan(event.clientX - dragStart.current.x, event.clientY - dragStart.current.y));
           }}
           onPointerUp={(event) => {
             dragStart.current = null;
@@ -206,12 +254,7 @@ export default function About() {
           onWheel={(event) => {
             if (!zoomed) return;
             event.preventDefault();
-            setPan((current) =>
-              clampPan(
-                current.x - event.deltaX,
-                current.y - event.deltaY,
-              ),
-            );
+            setPan((current) => clampPan(current.x - event.deltaX, current.y - event.deltaY));
           }}
         >
           <img
@@ -225,7 +268,15 @@ export default function About() {
             }}
           />
         </div>
+        <a
+          className="btn resume-download"
+          href={`${import.meta.env.BASE_URL}${profile.resumeUrl}`}
+          download={profile.resumeUrl}
+        >
+          Download Resume (.pdf)
+        </a>
       </dialog>
+
       <dialog
         ref={certificateDialog}
         className="resume-viewer artwork-viewer"

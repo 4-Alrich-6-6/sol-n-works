@@ -21,6 +21,51 @@ export const nav = [
   { id: "contact", label: "Contact" },
 ];
 
+export const technicalSkills = [
+  {
+    title: "Frontend Web Development",
+    tools: "HTML, CSS, JavaScript, React, Vite",
+  },
+  {
+    title: "UI/UX Design & Prototyping",
+    tools: "Figma, wireframing, layout & visual hierarchy",
+  },
+  {
+    title: "Database & Backend-as-a-Service (BaaS)",
+    tools: "Supabase, relational data, CRUD operations",
+  },
+  {
+    title: "Vector Illustration & Brand Assets",
+    tools: "Adobe Illustrator, logos, icons, print/digital graphics",
+  },
+  {
+    title: "Data Management & Accuracy",
+    tools: "Structured data entry, validation, spreadsheet organization",
+  },
+  {
+    title: "Email Marketing & Automation",
+    tools: "Brevo campaigns, templates, contact workflows",
+  },
+  {
+    title: "Video Editing & Post-Production",
+    tools: "Cutting, pacing, basic motion/audio polish",
+  },
+  {
+    title: "Version Control",
+    tools: "Git & GitHub workflows",
+  },
+];
+
+export const expertise = [
+  "HTML + CSS + JavaScript",
+  "React + Vite",
+  "Supabase",
+  "Figma",
+  "Brevo",
+  "Adobe Illustrator",
+  "Video Editing",
+];
+
 export const certificates = [
   { title: "Cisco Network Academy HTML Essentials", type: "Badge", image: "cert1.png" },
   { title: "Cisco Network Academy CSS Essentials", type: "Badge", image: "cert2.png" },
